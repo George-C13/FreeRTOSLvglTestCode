@@ -64,6 +64,14 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 
+/* 0.96寸OLED i2c 引脚定义 */
+#define OLED_SCL_Pin GPIO_PIN_8
+#define OLED_SCL_GPIO_Port GPIOB
+#define OLED_SDA_Pin GPIO_PIN_9
+#define OLED_SDA_GPIO_Port GPIOB
+
+#define MAJOR_SOFT_VER 00
+#define MINOR_SOFT_VER 01
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

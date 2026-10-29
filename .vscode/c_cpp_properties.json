@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "STM32F103RC",
+            "compilerPath": "D:/Software/EasyCodeCubeV360/Gcc/make/Gcc/arm_none_eabi/bin/arm-none-eabi-gcc.exe",
+            "compilerArgs": [
+                "-mcpu=cortex-m3",
+                "-mthumb"
+            ],
+            "intelliSenseMode": "windows-gcc-arm",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "USE_HAL_DRIVER",
+                "STM32F103xE"
+            ],
+            "cStandard": "c99",
+            "cppStandard": "c++14"
+        }
+    ],
+    "version": 4
+}

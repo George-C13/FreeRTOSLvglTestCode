@@ -25,6 +25,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "lv_port_disp.h"
+#include "b_soft_i2c.h"
 
 /* USER CODE END Includes */
 
@@ -45,6 +47,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+volatile uint8_t g_ui_state; // 界面任务运行阶段，供调试器观察
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -54,6 +57,13 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for uiTask */
+osThreadId_t uiTaskHandle;
+const osThreadAttr_t uiTask_attributes = {
+  .name = "uiTask",
+  .stack_size = 1024 * 4,
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -61,6 +71,7 @@ const osThreadAttr_t defaultTask_attributes = {
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
+void StartUiTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -94,6 +105,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
+  /* creation of uiTask */
+  uiTaskHandle = osThreadNew(StartUiTask, NULL, &uiTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -125,6 +139,73 @@ void StartDefaultTask(void *argument)
     osDelay(500);
   }
   /* USER CODE END StartDefaultTask */
+}
+
+/* USER CODE BEGIN Header_StartUiTask */
+/**
+* @brief Function implementing the uiTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartUiTask */
+void StartUiTask(void *argument)
+{
+  /* USER CODE BEGIN StartUiTask */
+  lv_obj_t *label;
+
+  (void)argument;
+  g_ui_state = 1U;
+
+  I2C_MasterInit();
+  osDelay(100U);
+
+  lv_init();
+
+  /* 使用已有的毫秒时基，不再另外调用滴答递增接口 */
+  lv_tick_set_cb(HAL_GetTick);
+
+  g_ui_state = 2U;
+  if (LV_PortDisp_Init() == NULL)
+  {
+      g_ui_state = 0xE1U;
+
+      for (;;)
+      {
+          osDelay(1000U);
+      }
+  }
+
+  g_ui_state = 3U;
+  label = lv_label_create(lv_screen_active());
+
+  if (label == NULL)
+  {
+      g_ui_state = 0xE2U;
+
+      for (;;)
+      {
+          osDelay(1000U);
+      }
+  }
+
+  /* 单色屏使用黑色背景和白色文字 */
+  lv_obj_set_style_bg_color(lv_screen_active(), lv_color_black(), LV_PART_MAIN);
+  lv_obj_set_style_bg_opa(lv_screen_active(), LV_OPA_COVER, LV_PART_MAIN);
+
+  lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
+  lv_obj_set_style_text_font(label, &lv_font_unscii_8, LV_PART_MAIN); // 使用单色点阵字体
+
+  lv_label_set_text(label, "LVGL Ready");
+  lv_obj_center(label);
+
+  g_ui_state = 4U;
+
+  for (;;)
+  {
+      lv_timer_handler();
+      osDelay(10U);
+  }
+  /* USER CODE END StartUiTask */
 }
 
 /* Private application code --------------------------------------------------*/
