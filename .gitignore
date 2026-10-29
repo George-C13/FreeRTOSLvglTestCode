@@ -1,0 +1,21 @@
+# Keil 编译输出目录
+/MDK-ARM/FreeRTOS_DemoCode/*
+
+# 保留最终烧录文件和链接布局文件
+!/MDK-ARM/FreeRTOS_DemoCode/*.hex
+!/MDK-ARM/FreeRTOS_DemoCode/*.bin
+!/MDK-ARM/FreeRTOS_DemoCode/*.sct
+
+# Keil 个人界面布局
+/MDK-ARM/*.uvguix.*
+
+# 编译日志及备份
+/MDK-ARM/*.log
+/MDK-ARM/*.build_log.htm
+/MDK-ARM/*.bak
+/MDK-ARM/*.uvprojx.bak
+/MDK-ARM/*.uvoptx.bak
+
+# J-Link 运行日志
+/MDK-ARM/JLinkLog.txt
+/MDK-ARM/JLink.log
