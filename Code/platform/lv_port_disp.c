@@ -1,29 +1,40 @@
+#include "stm32f1xx_hal.h"
 #include "lv_port_disp.h"
 #include "b_oled.h"
 #include <string.h>
 
-#define DISP_WIDTH          128U
-#define DISP_HEIGHT         64U
-#define DISP_PIXEL_BYTES    (DISP_WIDTH * DISP_HEIGHT / 8U)
-#define DISP_DRAW_BYTES     (DISP_PIXEL_BYTES + 8U)
+#define DISP_WIDTH          128U                                // 屏幕水平分辨率，单位：像素
+#define DISP_HEIGHT         64U                                 // 屏幕垂直分辨率，单位：像素
+#define DISP_PIXEL_BYTES    (DISP_WIDTH * DISP_HEIGHT / 8U)     // I1 格式每像素占 1 bit，全屏像素数据占 1024 字节
+#define DISP_DRAW_BYTES     (DISP_PIXEL_BYTES + 8U)             // LVGL I1 绘图缓冲区额外预留 8 字节调色板，共 1032 字节
 
-/* 使用三十二位数组，满足当前配置要求的四字节对齐 */
-static uint32_t s_draw_buf[DISP_DRAW_BYTES / sizeof(uint32_t)];
-static uint8_t s_page_buf[DISP_PIXEL_BYTES];
-static lv_display_t *s_display;
+static uint32_t s_draw_buf[DISP_DRAW_BYTES / sizeof(uint32_t)]; // LVGL 绘图缓冲区，使用 uint32_t 数组保证至少 4 字节对齐，共 1032 字节
+static uint8_t s_page_buf[DISP_PIXEL_BYTES]; // OLED 页格式缓冲区，存放转换后的 1024 字节像素数据
+static lv_display_t *s_display; // LVGL 显示设备对象指针，静态初始化为 NULL
 
-/* 供调试器观察，不通过这些变量跨任务操作界面 */
-volatile I2C_Status g_lvgl_oled_status = I2C_STATUS_NOT_READY;
-volatile uint32_t g_lvgl_flush_count;
-volatile uint32_t g_lvgl_flush_errors;
+volatile I2C_Status g_lvgl_oled_status = I2C_STATUS_NOT_READY; // OLED 初始化或最近一次刷屏的通信状态
+volatile uint32_t g_lvgl_flush_count; // 刷新回调累计调用次数，初始值为 0
+volatile uint32_t g_lvgl_flush_errors; // 刷新回调累计错误次数，初始值为 0
+volatile uint32_t g_oled_write_ms; // 最近一次整帧写入的耗时，单位：毫秒
 
+/**
+ * @brief  LVGL 显示刷新回调，将 I1 像素数据转换为 OLED 页格式并同步发送
+ * @param  display  LVGL 显示设备对象指针
+ * @param  area     本次刷新区域，当前仅支持完整的 128×64 像素画面
+ * @param  px_map   LVGL 绘图缓冲区指针，前 8 字节为调色板，后续为像素数据
+ * @return 无
+ * @note   源像素按行排列，每字节最高位对应左侧像素；目标像素按页排列，
+ *         每字节最低位对应页顶像素。无论发送成功或失败，均需调用
+ *         lv_display_flush_ready()，通知 LVGL 本次刷新处理结束、缓冲区可复用。
+ */
 static void DisplayFlush(lv_display_t *display, const lv_area_t *area, uint8_t *px_map)
 {
-    uint16_t x;
-    uint16_t y;
-    uint16_t src_index;
-    uint16_t dst_index;
-    const uint8_t *pixels;
+    uint16_t x; // 当前像素的横坐标，范围为 0～127
+    uint16_t y; // 当前像素的纵坐标，范围为 0～63
+    uint16_t src_index; // 当前像素在 LVGL 行排列数据中的字节索引，不包含调色板偏移
+    uint16_t dst_index; // 当前像素在 OLED 页排列缓冲区中的字节索引
+    const uint8_t *pixels; // 指向跳过 8 字节调色板后的像素数据，通过此指针只读访问
+    uint32_t start_ms; // 整帧写入开始时刻，单位：毫秒
 
     g_lvgl_flush_count++;
 
@@ -56,7 +67,9 @@ static void DisplayFlush(lv_display_t *display, const lv_area_t *area, uint8_t *
         }
     }
 
+    start_ms = HAL_GetTick(); // 记录整帧写入开始时刻
     g_lvgl_oled_status = OLED_WriteFrame(s_page_buf, (uint16_t)sizeof(s_page_buf));
+    g_oled_write_ms = HAL_GetTick() - start_ms; // 计算本次写入的实际经过时间
 
     if (g_lvgl_oled_status != I2C_STATUS_OK)
     {
@@ -67,6 +80,15 @@ static void DisplayFlush(lv_display_t *display, const lv_area_t *area, uint8_t *
     lv_display_flush_ready(display);
 }
 
+/**
+ * @brief  初始化 OLED 硬件并创建、配置 LVGL 显示设备
+ * @param  无
+ * @return 成功时返回 LVGL 显示设备对象指针；OLED 初始化失败或显示设备创建失败时返回 NULL
+ * @note   调用前需完成软件 I2C 初始化和 lv_init()，并由 UI 任务统一调用。
+ *         显示设备使用 128×64 分辨率、I1 单色格式、单绘图缓冲区和全屏刷新模式，
+ *         通过 DisplayFlush() 完成像素格式转换与 OLED 数据发送。
+ *         重复调用时直接返回已创建的显示设备对象，不重复初始化。
+ */
 lv_display_t *LV_PortDisp_Init(void)
 {
     if (s_display != NULL)
