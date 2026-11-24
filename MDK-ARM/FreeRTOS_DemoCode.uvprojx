@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xE,LV_CONF_INCLUDE_SIMPLE</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/STM32F1xx_HAL_Driver/Inc;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;../Code/board;../Middlewares/Third_Party/lvgl;../Middlewares/Third_Party;..\Code\platform</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/STM32F1xx_HAL_Driver/Inc;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;../Code/board;../Middlewares/Third_Party/lvgl;../Middlewares/Third_Party;../Code/platform;..\Code\service</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -388,6 +388,13 @@
         </Group>
         <Group>
           <GroupName>Code/service</GroupName>
+          <Files>
+            <File>
+              <FileName>s_sensor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\service\s_sensor.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Code/platform</GroupName>
@@ -411,6 +418,11 @@
               <FileName>b_oled.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Code\board\b_oled.c</FilePath>
+            </File>
+            <File>
+              <FileName>b_dht11.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\board\b_dht11.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -96,21 +96,21 @@ lv_display_t *LV_PortDisp_Init(void)
         return s_display;
     }
 
-    g_lvgl_oled_status = OLED_Init();
+    g_lvgl_oled_status = OLED_Init();// 初始化 OLED 硬件
     if (g_lvgl_oled_status != I2C_STATUS_OK)
     {
         return NULL;
     }
 
-    s_display = lv_display_create(DISP_WIDTH, DISP_HEIGHT);
+    s_display = lv_display_create(DISP_WIDTH, DISP_HEIGHT);// 创建显示设备对象
     if (s_display == NULL)
     {
         return NULL;
     }
 
-    lv_display_set_color_format(s_display, LV_COLOR_FORMAT_I1);
-    lv_display_set_buffers(s_display, s_draw_buf, NULL, sizeof(s_draw_buf), LV_DISPLAY_RENDER_MODE_FULL);
-    lv_display_set_flush_cb(s_display, DisplayFlush);
+    lv_display_set_color_format(s_display, LV_COLOR_FORMAT_I1);// 设置显示设备颜色格式
+    lv_display_set_buffers(s_display, s_draw_buf, NULL, sizeof(s_draw_buf), LV_DISPLAY_RENDER_MODE_FULL);// 设置显示设备绘图缓冲区
+    lv_display_set_flush_cb(s_display, DisplayFlush);// 设置显示设备刷新回调函数
 
     return s_display;
 }

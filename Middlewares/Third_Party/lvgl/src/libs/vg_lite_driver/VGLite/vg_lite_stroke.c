@@ -577,7 +577,7 @@ void split_quad(float out1[6], float out2[6], float curve[6], float split)
             ms, s, 0,
             ms2, 2 * ms * s, s2
         };
-        /* C = A �� B */
+        /* C = A * B */
         for(uint8_t i = 0; i < 2; ++i) {
             for(size_t y = 0; y < 3; ++y)
                 for(size_t x = 0; x < 1; ++x)
@@ -602,7 +602,7 @@ void split_quad(float out1[6], float out2[6], float curve[6], float split)
             0, ms, s,
             0, 0, 1
         };
-        /* C = A �� B */
+        /* C = A * B */
         for(uint8_t i = 0; i < 2; ++i) {
             for(size_t y = 0; y < 3; ++y)
                 for(size_t x = 0; x < 1; ++x)
@@ -651,7 +651,7 @@ void split_cubic(float out1[8], float out2[8], float curve[8], float split)
             ms2, 2 * ms * s, s2, 0,
             ms3, 3 * s * ms2, 3 * s2 * ms, s3
         };
-        /* C = A �� B */
+        /* C = A * B */
         for(uint8_t i = 0; i < 2; ++i) {
             for(size_t y = 0; y < 4; ++y)
                 for(size_t x = 0; x < 1; ++x)
@@ -679,7 +679,7 @@ void split_cubic(float out1[8], float out2[8], float curve[8], float split)
             0, 0, ms, s,
             0, 0, 0, 1
         };
-        /* C = A �� B */
+        /* C = A * B */
         for(uint8_t i = 0; i < 2; ++i) {
             for(size_t y = 0; y < 4; ++y)
                 for(size_t x = 0; x < 1; ++x)

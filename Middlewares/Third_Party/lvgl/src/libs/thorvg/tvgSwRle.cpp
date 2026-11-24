@@ -74,7 +74,7 @@
  * encourage you to use the following text:
 
  *   """
- *    Portions of this software are copyright � <year> The FreeType
+ *    Portions of this software are copyright © <year> The FreeType
  *    Project (www.freetype.org).  All rights reserved.
  *   """
 
